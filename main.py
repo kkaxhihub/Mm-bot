@@ -497,8 +497,7 @@ async def warn(
         # WARN USER
         if action.value == "warn":
 
-            cursor = await db.execute("SELECT
-MAX(case_id) FROM warns")
+            cursor = await db.execute("Select MAX(case_id) FROM warns")
     data = await cursor.fetchone()
 
     case_id = (data[0] or 0) + 1
