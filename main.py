@@ -745,9 +745,11 @@ async def manageban(
     if log_channel:
         await log_channel.send(embed=embed)
 
-    await interaction.response.send_message f"✅ Action **{action.value}** completed for {target}.",
-        ephemeral=True
-    )
+    await interaction.response.send_message(
+    f"✅ Action **{action.value}** 
+    completed for {target}.",
+    ephemeral=True
+)
 
  
             
