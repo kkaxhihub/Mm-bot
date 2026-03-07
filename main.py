@@ -754,3 +754,5 @@ async def manageban(
 # ---------------- RUN BOT ----------------
 
 TOKEN = os.getenv("BOT_TOKEN")
+
+bot.run(TOKEN)
