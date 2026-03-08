@@ -533,7 +533,7 @@ if action.value == "warnings":
         "SELECT case_id, reason FROM warns WHERE user_id=?",
         (user.id,)
     )
-            rows = await cursor.fetchall()
+    rows = await cursor.fetchall()
 
             if not rows:
                 await interaction.response.send_message("No warnings found.")
