@@ -502,8 +502,8 @@ async def warn(
 
     case_id = (data[0] or 0) + 1
 
-   await db.execute(
-                "INSERT INTO warns VALUES (?, ?, ?, ?)",
+     await db.execute(
+    "INSERT INTO warns VALUES (?, ?, ?, ?)",
                 (user.id, interaction.user.id, reason, case_id)
             )
             await db.commit()
