@@ -67,7 +67,7 @@ async def save_transcript(channel, closer, guild):
         inline=False
     )
 
-    embed.set_footer(text="Powered by Kakashi ✅")  # ✅ replaces âœ…
+    embed.set_footer(text="Powered by Kakashi")  
 
     if log_channel:
         await log_channel.send(embed=embed, file=file)
