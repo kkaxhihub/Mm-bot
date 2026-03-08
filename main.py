@@ -685,7 +685,7 @@ async def manageban(
 
     if owner_role not in interaction.user.roles:
         await interaction.response.send_message(
-            "âŒ Only owners can use this command.",
+            "🚫Only owners can use this command.",
             ephemeral=True
         )
         return
@@ -701,10 +701,10 @@ async def manageban(
 
    # Set title and color based on action
     if action.value == "ban":
-        title = "User Banned ðŸš«"
+        title = "User Banned 🚫"
         color = discord.Color.red()
     else:
-        title = "User Unbanned âœ…"
+        title = "User Unbanned ✅"
         color = discord.Color.green()
 
     embed = discord.Embed(
@@ -755,7 +755,7 @@ async def manageban(
 
     except Exception as e:
         await interaction.response.send_message(
-            f"âŒ Error: {e}",
+            f"Error: {e}",
             ephemeral=True
         )
         return
@@ -764,7 +764,7 @@ async def manageban(
         await log_channel.send(embed=embed)
 
     await interaction.response.send_message(
-        f"âœ… Action **{action.value}** completed for {target}.",
+        f" Action **{action.value}** completed for {target}.",
         ephemeral=True
     )
 
