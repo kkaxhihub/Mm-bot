@@ -518,15 +518,14 @@ async def warn(
 
     embed.set_footer(text="Powered by Kakashi")
 
-   log_channel=
-interaction.guild.get_channel(LOG_CHANNEL_ID)
-            if log_channel:
-                await log_channel.send(embed=embed)
+log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
+if log_channel:
+    await log_channel.send(embed=embed)
 
-    await interaction.response.send_message(
-                f"✅ {user.mention} has been warned.",
-                ephemeral=True
-            )
+await interaction.response.send_message(
+    f"✅ {user.mention} has been warned.",
+    ephemeral=True
+)
 
         # SHOW WARNINGS
         elif action.value == "warnings":
