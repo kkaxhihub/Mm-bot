@@ -512,11 +512,11 @@ async def warn(
             )
 
     embed.add_field(name="User", value=user.mention)
-            embed.add_field(name="Case", value=f"#{case_id}")
-            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
-            embed.add_field(name="Reason", value=reason, inline=False)
+    embed.add_field(name="Case", value=f"#{case_id}")
+    embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+    embed.add_field(name="Reason", value=reason, inline=False)
 
-            embed.set_footer(text="Powered by Kakashi")
+    embed.set_footer(text="Powered by Kakashi")
 
             log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
             if log_channel:
