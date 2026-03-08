@@ -541,7 +541,7 @@ if action.value == "warnings":
         return
     text = ""
 
-            for case_id, reason in rows:
+    for case_id, reason in rows:
                 text += f"Case #{case_id} • {reason}\n"
 
             embed = discord.Embed(
