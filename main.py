@@ -291,7 +291,7 @@ async def middleman(interaction: discord.Interaction):
         color=discord.Color.green()
     )
 
-    embed.set_image(url="https://img.sanishtech.com/u/fc1b8d2ae45219788725d922533f1904.webp")
+    embed.set_image(url="https://cdn.discordapp.com/attachments/1436674705930063875/1479860750993592530/middleman1_2-1.webp?ex=69ae3bf9&is=69acea79&hm=78e2e3a5379a861858e1c8f7a94504268edc4807585a3d63b95a3411875aa577")
     embed.set_footer(text="Powered by Kakashi")
 
     await interaction.response.send_message(embed=embed)
