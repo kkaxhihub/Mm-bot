@@ -393,23 +393,23 @@ async def middleman1(interaction: discord.Interaction):
 
     if role not in interaction.user.roles:
         await interaction.response.send_message(
-            "âŒ Only middlemen can use this command.", ephemeral=True
+            "❌ Only middlemen can use this command.", ephemeral=True
         )
         return
 
     embed = discord.Embed(
         title="Middleman Services",
         description=(
-            "â€¢ A middleman is a trusted go-between who receives items from both parties.\n"
-            "â€¢ Once verified, the middleman distributes the items to each party as agreed.\n"
-            "â€¢ This process ensures fairness and prevents scams.\n"
-            "â€¢ Common in mutual trades, swaps, and high-value exchanges.\n"
-            "â€¢ Only works safely if the middleman is reputable and verified."
+            "• A middleman is a trusted go-between who receives items from both parties.\n"
+            "• Once verified, the middleman distributes the items to each party as agreed.\n"
+            "• This process ensures fairness and prevents scams.\n"
+            "• Common in mutual trades, swaps, and high-value exchanges.\n"
+            "• Only works safely if the middleman is reputable and verified."
         ),
         color=discord.Color.green()
     )
 
-    embed.set_image(url="https://img.sanishtech.com/u/82ae73dd9c017db5164346d9121e94f7.webp")
+    embed.set_image(url="https://cdn.discordapp.com/attachments/1479495822591656018/1479854700898816111/middleman2_1.webp?ex=69ae3657&is=69ace4d7&hm=4da9678b97798bbb3e2f445931b8e9677da6210f478756484ec52bb66d41aa25")
     embed.set_footer(text="Powered by Kakashi")
 
     await interaction.response.send_message(embed=embed)
