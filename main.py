@@ -22,12 +22,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # ---------------- TRANSCRIPT FUNCTION ----------------
 
 async def save_transcript(channel, closer, guild):
-
     log_channel = guild.get_channel(LOG_CHANNEL_ID)
 
     creator_id = "Unknown"
     claimed_id = "None"
 
+    # Parse topic for creator and claimed info
     if channel.topic:
         data = channel.topic.split("|")
         for item in data:
@@ -38,17 +38,21 @@ async def save_transcript(channel, closer, guild):
 
     messages = []
 
+    # Fetch all messages
     async for msg in channel.history(limit=None, oldest_first=True):
-        time = msg.created_at.strftime("%Y-%m-%d %H:%M")
+        # Format timestamp nicely
+        time = msg.created_at.strftime("%A, %b %d, %Y %I:%M %p")
         messages.append(f"[{time}] {msg.author}: {msg.content}")
 
     transcript = "\n".join(messages)
 
+    # Create file from transcript
     file = discord.File(
         io.StringIO(transcript),
         filename=f"transcript-{channel.name}.txt"
     )
 
+    # Create embed
     embed = discord.Embed(
         title=f"Transcript for Ticket #{channel.name}",
         color=discord.Color.green()
@@ -59,15 +63,14 @@ async def save_transcript(channel, closer, guild):
     embed.add_field(name="Closed By", value=closer.mention, inline=False)
     embed.add_field(
         name="Closed At",
-        value=datetime.now().strftime("%A, %B %d, %Y %I:%M %p"),
+        value=datetime.now().strftime("%A, %b %d, %Y %I:%M %p"),
         inline=False
     )
 
-    embed.set_footer(text="Powered by Kakashi")
+    embed.set_footer(text="Powered by Kakashi ✅")  # ✅ replaces âœ…
 
     if log_channel:
         await log_channel.send(embed=embed, file=file)
-
 
 # ---------------- TICKET BUTTONS ----------------
 
