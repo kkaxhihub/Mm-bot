@@ -535,10 +535,10 @@ if action.value == "warnings":
     )
     rows = await cursor.fetchall()
 
-            if not rows:
-                await interaction.response.send_message("No warnings found.")
-                return
 
+    if not rows:
+        await interaction.response.send_message("No warnings found.")
+        return
             text = ""
 
             for case_id, reason in rows:
