@@ -558,9 +558,9 @@ elif action.value == "delwarn":
             "SELECT user_id, mod_id, reason FROM warns WHERE case_id=?",
                 (case,)
             )
-            data = await cursor.fetchone()
+    data = await cursor.fetchone()
 
-            if data is None:
+    if data is None:
                 await interaction.response.send_message(
                     "❌ Case not found.",
                     ephemeral=True
