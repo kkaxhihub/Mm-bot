@@ -7,7 +7,6 @@ import io
 from datetime import datetime
 import aiosqlite
 
-TOKEN = "BOT_TOKEN"
 
 MIDDLEMAN_ROLE_ID = 1479406107888844921
 OWNER_ROLE_ID = 1478027602269700168
@@ -754,4 +753,5 @@ async def manageban(
             
 # ---------------- RUN BOT ----------------
 
-bot.run("BOT_TOKEN")
+token = os.getenv("BOT_TOKEN")
+bot.run(token)
