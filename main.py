@@ -598,7 +598,7 @@ elif action.value == "delwarn":
         ephemeral=True
     )
       
-            # CLEAR WARNS
+        # CLEAR WARNS
         elif action.value == "clearwarn":
 
             cursor = await db.execute(
