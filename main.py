@@ -518,8 +518,7 @@ async def warn(
 
     embed.set_footer(text="Powered by Kakashi")
 
-    log_channel= 
-interaction.guild.get_channel(LOG_CHANNEL_ID)
+   log_channel=interaction.guild.get_channel(LOG_CHANNEL_ID)
             if log_channel:
                 await log_channel.send(embed=embed)
 
