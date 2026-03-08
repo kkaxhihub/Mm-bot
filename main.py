@@ -495,7 +495,7 @@ async def warn(
     async with aiosqlite.connect("warns.db") as db:
 
         # WARN USER
-if action.value == "warn":
+        if action.value == "warn":
 
 cursor =    await db.execute("SELECT COUNT(*) FROM warns")
     count =    await cursor.fetchone()
