@@ -1,0 +1,757 @@
+import os
+import discord
+from discord.ext import commands
+from discord import app_commands
+import asyncio
+import io
+from datetime import datetime
+import aiosqlite
+
+TOKEN = "BOT_TOKEN"
+
+MIDDLEMAN_ROLE_ID = 1479406107888844921
+OWNER_ROLE_ID = 1478027602269700168
+LOG_CHANNEL_ID = 1475103393050525870
+
+intents = discord.Intents.default()
+intents.messages = True
+intents.guilds = True
+intents.members = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# ---------------- TRANSCRIPT FUNCTION ----------------
+
+async def save_transcript(channel, closer, guild):
+
+    log_channel = guild.get_channel(LOG_CHANNEL_ID)
+
+    creator_id = "Unknown"
+    claimed_id = "None"
+
+    if channel.topic:
+        data = channel.topic.split("|")
+        for item in data:
+            if "creator:" in item:
+                creator_id = item.split(":")[1]
+            if "claimed:" in item:
+                claimed_id = item.split(":")[1]
+
+    messages = []
+
+    async for msg in channel.history(limit=None, oldest_first=True):
+        time = msg.created_at.strftime("%Y-%m-%d %H:%M")
+        messages.append(f"[{time}] {msg.author}: {msg.content}")
+
+    transcript = "\n".join(messages)
+
+    file = discord.File(
+        io.StringIO(transcript),
+        filename=f"transcript-{channel.name}.txt"
+    )
+
+    embed = discord.Embed(
+        title=f"Transcript for Ticket #{channel.name}",
+        color=discord.Color.green()
+    )
+
+    embed.add_field(name="Ticket Creator", value=f"<@{creator_id}>", inline=False)
+    embed.add_field(name="Claimed By", value=f"<@{claimed_id}>", inline=False)
+    embed.add_field(name="Closed By", value=closer.mention, inline=False)
+    embed.add_field(
+        name="Closed At",
+        value=datetime.now().strftime("%A, %B %d, %Y %I:%M %p"),
+        inline=False
+    )
+
+    embed.set_footer(text="Powered by Kakashi")
+
+    if log_channel:
+        await log_channel.send(embed=embed, file=file)
+
+
+# ---------------- TICKET BUTTONS ----------------
+
+class TicketControls(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Claim", style=discord.ButtonStyle.green, custom_id="claim_ticket")
+    async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
+
+        if role not in interaction.user.roles:
+            await interaction.response.send_message(
+                "âŒ Only middlemen can claim this ticket.", ephemeral=True
+            )
+            return
+
+        for member in interaction.channel.members:
+            if role in member.roles and member != interaction.user:
+                await interaction.channel.set_permissions(
+                    member,
+                    send_messages=False,
+                    view_channel=True
+                )
+
+        await interaction.channel.set_permissions(
+            interaction.user,
+            view_channel=True,
+            send_messages=True
+        )
+
+        button.label = "Claimed"
+        button.style = discord.ButtonStyle.gray
+        button.disabled = True
+
+        await interaction.response.edit_message(view=self)
+
+        embed = discord.Embed(
+            description=f"âœ… {interaction.user.mention} will be your middleman for today.",
+            color=discord.Color.green()
+        )
+
+        embed.set_footer(text="Powered by Kakashi")
+
+        await interaction.followup.send(embed=embed)
+
+        if interaction.channel.topic:
+            await interaction.channel.edit(topic=f"{interaction.channel.topic}|claimed:{interaction.user.id}")
+        else:
+            await interaction.channel.edit(topic=f"claimed:{interaction.user.id}")
+
+    @discord.ui.button(label="Close", style=discord.ButtonStyle.red, custom_id="close_ticket")
+    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            description="ðŸ”’ Closing ticket in 5 seconds...",
+            color=discord.Color.green()
+        )
+
+        embed.set_footer(text="Powered by Kakashi")
+
+        await interaction.response.send_message(embed=embed)
+
+        await asyncio.sleep(5)
+
+        await save_transcript(interaction.channel, interaction.user, interaction.guild)
+
+        await interaction.channel.delete()
+
+
+# ---------------- PANEL BUTTON ----------------
+
+class TicketPanel(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Request Middleman", style=discord.ButtonStyle.blurple, custom_id="create_ticket")
+    async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        guild = interaction.guild
+        role = guild.get_role(MIDDLEMAN_ROLE_ID)
+
+        category = discord.utils.get(guild.categories, name="Tickets")
+
+        if category is None:
+            category = await guild.create_category("Tickets")
+
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            interaction.user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
+            role: discord.PermissionOverwrite(view_channel=True, send_messages=False),
+            guild.me: discord.PermissionOverwrite(view_channel=True)
+        }
+
+        channel = await guild.create_text_channel(
+            f"ticket-{interaction.user.name}",
+            category=category,
+            overwrites=overwrites
+        )
+
+        await channel.edit(topic=f"creator:{interaction.user.id}")
+
+        embed = discord.Embed(
+            description=(
+                f"{interaction.user.mention}, Thank you for using our middleman services.\n"
+                "Please wait for a middleman to assist you.\n\n"
+                "If you have any questions, please let <@1478027602269700168> or higher know."
+            ),
+            color=discord.Color.green()
+        )
+
+        embed.set_footer(text="Powered by Kakashi")
+
+        await channel.send(
+            content=f"{role.mention}",
+            embed=embed,
+            view=TicketControls()
+        )
+
+        await interaction.response.send_message(
+            f"âœ… Ticket created: {channel.mention}",
+            ephemeral=True
+        )
+
+
+# ---------------- BOT READY ----------------
+
+@bot.event
+async def on_ready():
+    bot.add_view(TicketPanel())
+    bot.add_view(TicketControls())
+
+    async with aiosqlite.connect("warns.db") as db:
+        await db.execute("""
+        CREATE TABLE IF NOT EXISTS warns(
+            user_id INTEGER,
+            mod_id INTEGER,
+            reason TEXT,
+            case_id INTEGER
+        )
+        """)
+        await db.commit()
+
+    await bot.tree.sync()
+    print(f"{bot.user} is online!")
+
+# ---------------- PANEL COMMAND ----------------
+
+@bot.tree.command(name="panel", description="Send middleman panel")
+async def panel(interaction: discord.Interaction):
+
+    owner_role = interaction.guild.get_role(OWNER_ROLE_ID)
+
+    if owner_role not in interaction.user.roles:
+        await interaction.response.send_message(
+            "âŒ Only the owner role can use this command.",
+            ephemeral=True
+        )
+        return
+
+    text = (
+        "**Hatake Market**\n\n"
+        "Click the button below to **Request a Middleman**.\n\n"
+        "**How it works**\n"
+        "â€¢ Seller gives item to MM\n"
+        "â€¢ Buyer sends payment to MM\n"
+        "â€¢ MM gives item to buyer\n\n"
+        "**Disclaimer**\n"
+        "Both traders must agree to the deal."
+    )
+
+    embed = discord.Embed(
+        description=text,
+        color=discord.Color.green()
+    )
+
+    embed.set_footer(text="Powered by Kakashi")
+
+    await interaction.channel.send(embed=embed, view=TicketPanel())
+
+    await interaction.response.send_message("âœ… Panel sent!", ephemeral=True)
+
+
+# ---------------- MIDDLEMAN INFO ----------------
+
+@bot.tree.command(name="middleman", description="Show middleman info")
+async def middleman(interaction: discord.Interaction):
+
+    role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
+
+    if role not in interaction.user.roles:
+        await interaction.response.send_message(
+            "âŒ Only middlemen can use this command.", ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title="Middleman Services",
+        description=(
+            "â€¢ A middleman is a trusted go-between who holds payment until the seller delivers goods or services.\n"
+            "â€¢ The funds are released once the buyer confirms everything is as agreed.\n"
+            "â€¢ This process helps prevent scams, build trust, and resolve disputes.\n"
+            "â€¢ Common in valuable games, real-life money trades, in-game currency, and collectibles.\n"
+            "â€¢ Only works safely if the middleman is reputable and verified."
+        ),
+        color=discord.Color.green()
+    )
+
+    embed.set_image(url="https://img.sanishtech.com/u/fc1b8d2ae45219788725d922533f1904.webp")
+    embed.set_footer(text="Powered by Kakashi")
+
+    await interaction.response.send_message(embed=embed)
+
+
+# ---------------- ADD USER ----------------
+
+@bot.tree.command(name="add", description="Add user to ticket")
+async def add(interaction: discord.Interaction, user: discord.Member):
+
+    role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
+
+    if role not in interaction.user.roles:
+        await interaction.response.send_message(
+            "âŒ Only middlemen can use this command.", ephemeral=True
+        )
+        return
+
+    await interaction.channel.set_permissions(user, view_channel=True, send_messages=True)
+
+    embed = discord.Embed(
+        description=f"âœ… {user.mention} has been added to the ticket!",
+        color=discord.Color.green()
+    )
+
+    embed.set_footer(text="Powered by Kakashi")
+
+    await interaction.response.send_message(embed=embed)
+
+
+# ---------------- TRANSFER ----------------
+
+@bot.tree.command(name="transfer", description="Transfer ticket")
+async def transfer(interaction: discord.Interaction, user: discord.Member):
+
+    role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
+
+    if role not in interaction.user.roles:
+        await interaction.response.send_message(
+            "âŒ Only middlemen can use this command.", ephemeral=True
+        )
+        return
+
+    await interaction.channel.set_permissions(
+        interaction.user,
+        view_channel=True,
+        send_messages=False
+    )
+
+    await interaction.channel.set_permissions(
+        user,
+        view_channel=True,
+        send_messages=True
+    )
+
+    embed = discord.Embed(
+        title="ðŸ” Middleman Transferred",
+        description=f"{interaction.user.mention} transferred this ticket to {user.mention}",
+        color=discord.Color.green()
+    )
+
+    embed.set_footer(text="Powered by Kakashi")
+
+    await interaction.response.send_message(embed=embed)
+
+
+# ---------------- CLOSE COMMAND ----------------
+
+@bot.tree.command(name="close", description="Close ticket")
+async def close(interaction: discord.Interaction):
+
+    embed = discord.Embed(
+        description="ðŸ”’ Closing ticket in 5 seconds...",
+        color=discord.Color.green()
+    )
+
+    embed.set_footer(text="Powered by Kakashi")
+
+    await interaction.response.send_message(embed=embed)
+
+    await asyncio.sleep(5)
+
+    await save_transcript(interaction.channel, interaction.user, interaction.guild)
+
+    await interaction.channel.delete()
+
+
+# ---------------- MIDDLEMAN1 ----------------
+
+@bot.tree.command(name="middleman1", description="Show alternate middleman info")
+async def middleman1(interaction: discord.Interaction):
+
+    role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
+
+    if role not in interaction.user.roles:
+        await interaction.response.send_message(
+            "âŒ Only middlemen can use this command.", ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title="Middleman Services",
+        description=(
+            "â€¢ A middleman is a trusted go-between who receives items from both parties.\n"
+            "â€¢ Once verified, the middleman distributes the items to each party as agreed.\n"
+            "â€¢ This process ensures fairness and prevents scams.\n"
+            "â€¢ Common in mutual trades, swaps, and high-value exchanges.\n"
+            "â€¢ Only works safely if the middleman is reputable and verified."
+        ),
+        color=discord.Color.green()
+    )
+
+    embed.set_image(url="https://img.sanishtech.com/u/82ae73dd9c017db5164346d9121e94f7.webp")
+    embed.set_footer(text="Powered by Kakashi")
+
+    await interaction.response.send_message(embed=embed)
+
+
+# ---------------- VOUCH COMMAND WITH LOG CHANNEL ----------------
+
+VOUCH_LOG_CHANNEL_ID = 1475103393050525870  # <-- Replace with your channel ID
+
+@bot.tree.command(name="vouch", description="Give a vouch to a user")
+@app_commands.describe(user="The user being vouched", reason="Reason for the vouch")
+async def vouch(interaction: discord.Interaction, user: discord.Member, reason: str):
+
+    # Fetch the log channel
+    log_channel = interaction.guild.get_channel(VOUCH_LOG_CHANNEL_ID)
+    if log_channel is None:
+        await interaction.response.send_message("âŒ Vouch log channel not found.", ephemeral=True)
+        return
+
+    # Main embed (goes in the log channel)
+    embed = discord.Embed(
+        title="âœ… Vouch Given",
+        color=discord.Color.green()
+    )
+
+    embed.add_field(name="Reason", value=reason, inline=False)
+    embed.add_field(name="Vouched User", value=user.mention, inline=False)
+    embed.add_field(name="Vouched By", value=interaction.user.mention, inline=False)
+
+    embed.set_thumbnail(url=user.display_avatar.url)
+    embed.set_footer(text="Powered by Kakashi")
+
+    # Button view
+    class VouchButton(discord.ui.View):
+        @discord.ui.button(label="See more info", style=discord.ButtonStyle.blurple)
+        async def info(self, interaction2: discord.Interaction, button: discord.ui.Button):
+
+            # Account creation & join dates
+            user_created = user.created_at.strftime("%A, %B %d, %Y")
+            user_joined = user.joined_at.strftime("%A, %B %d, %Y") if user.joined_at else "Unknown"
+
+            voucher_created = interaction.user.created_at.strftime("%A, %B %d, %Y")
+            voucher_joined = interaction.user.joined_at.strftime("%A, %B %d, %Y") if interaction.user.joined_at else "Unknown"
+
+            # Detailed embed
+            details_embed = discord.Embed(
+                title="â„¹ï¸ Vouch Details",
+                color=discord.Color.blue()
+            )
+
+            details_embed.add_field(name="Reason", value=reason, inline=False)
+            details_embed.add_field(name="Vouched User", value=user.mention, inline=False)
+            details_embed.add_field(name="Vouched By", value=interaction.user.mention, inline=False)
+            details_embed.add_field(
+                name="User Account",
+                value=f"Created: {user_created}\nJoined Server: {user_joined}",
+                inline=False
+            )
+            details_embed.add_field(
+                name="Voucher Account",
+                value=f"Created: {voucher_created}\nJoined Server: {voucher_joined}",
+                inline=False
+            )
+
+            details_embed.set_thumbnail(url=user.display_avatar.url)
+            details_embed.set_footer(text="Powered by Kakashi")
+
+            await interaction2.response.send_message(embed=details_embed, ephemeral=True)
+
+    # Send the main vouch embed to the **log channel**
+    await log_channel.send(embed=embed, view=VouchButton())
+
+    # Confirm to the user that the vouch was recorded
+    await interaction.response.send_message(
+        f"âœ… Your vouch for {user.mention} has been recorded in <#{VOUCH_LOG_CHANNEL_ID}>.",
+        ephemeral=True
+    )
+
+
+@bot.tree.command(name="warn", description="Moderation warn system")
+@app_commands.describe(
+    action="Choose warn action",
+    user="Target user",
+    case="Case number",
+    reason="Reason"
+)
+@app_commands.choices(action=[
+    app_commands.Choice(name="Warn (warn a user)", value="warn"),
+    app_commands.Choice(name="Warnings (get a users warnings)", value="warnings"),
+    app_commands.Choice(name="Delwarn (delete a warn)", value="delwarn"),
+    app_commands.Choice(name="Clearwarn (clear all warns for the user)", value="clearwarn")
+])
+async def warn(
+    interaction: discord.Interaction,
+    action: app_commands.Choice[str],
+    user: discord.Member = None,
+    case: int = None,
+    reason: str = None
+):
+
+    async with aiosqlite.connect("warns.db") as db:
+
+        # WARN USER
+        if action.value == "warn":
+
+            cursor = await db.execute("SELECT COUNT(*) FROM warns")
+            count = await cursor.fetchone()
+            case_id = count[0] + 1
+
+            await db.execute(
+                "INSERT INTO warns VALUES (?, ?, ?, ?)",
+                (user.id, interaction.user.id, reason, case_id)
+            )
+            await db.commit()
+
+            embed = discord.Embed(
+                title="âš ï¸ User Warned",
+                color=discord.Color.orange()
+            )
+
+            embed.add_field(name="User", value=user.mention)
+            embed.add_field(name="Case", value=f"#{case_id}")
+            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            embed.add_field(name="Reason", value=reason, inline=False)
+
+            embed.set_footer(text="Powered by Kakashi")
+
+            log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
+            if log_channel:
+                await log_channel.send(embed=embed)
+
+            await interaction.response.send_message(
+                f"âœ… {user.mention} has been warned.",
+                ephemeral=True
+            )
+
+        # SHOW WARNINGS
+        elif action.value == "warnings":
+
+            cursor = await db.execute(
+                "SELECT case_id, reason FROM warns WHERE user_id=?",
+                (user.id,)
+            )
+            rows = await cursor.fetchall()
+
+            if not rows:
+                await interaction.response.send_message("No warnings found.")
+                return
+
+            text = ""
+
+            for case_id, reason in rows:
+                text += f"Case #{case_id} â€¢ {reason}\n"
+
+            embed = discord.Embed(
+                title=f"{len(rows)} warn(s) for {user}",
+                description=text,
+                color=discord.Color.blue()
+            )
+
+            await interaction.response.send_message(embed=embed)
+
+        # DELETE WARN
+        elif action.value == "delwarn":
+
+            cursor = await db.execute(
+                "SELECT user_id, mod_id, reason FROM warns WHERE case_id=?",
+                (case,)
+            )
+            data = await cursor.fetchone()
+
+            if data is None:
+                await interaction.response.send_message(
+                    "âŒ Case not found.",
+                    ephemeral=True
+                )
+                return
+
+            user_id, mod_id, original_reason = data
+
+            await db.execute("DELETE FROM warns WHERE case_id=?", (case,))
+            await db.commit()
+
+            embed = discord.Embed(
+                title="ðŸ—‘ Warn Removed",
+                color=discord.Color.red()
+            )
+
+            embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
+            embed.add_field(name="Case", value=f"#{case}", inline=False)
+            embed.add_field(name="By", value=interaction.user.mention, inline=False)
+            embed.add_field(name="Original Reason", value=original_reason, inline=False)
+            embed.add_field(
+                name="Removal Reason",
+                value=reason if reason else "No reason provided",
+                inline=False
+            )
+
+            embed.set_footer(text="Powered by Kakashi")
+
+            log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
+            if log_channel:
+                await log_channel.send(embed=embed)
+
+            await interaction.response.send_message(
+                f"âœ… Warn case #{case} removed.",
+                ephemeral=True
+            )
+      
+            # CLEAR WARNS
+        elif action.value == "clearwarn":
+
+            cursor = await db.execute(
+                "SELECT COUNT(*) FROM warns WHERE user_id=?",
+                (user.id,)
+            )
+            data = await cursor.fetchone()
+            removed = data[0]
+
+            await db.execute(
+                "DELETE FROM warns WHERE user_id=?",
+                (user.id,)
+            )
+            await db.commit()
+
+            embed = discord.Embed(
+                title="ðŸ§¹ Warns Cleared",
+                color=discord.Color.green(),
+                timestamp=datetime.utcnow()
+            )
+
+            embed.add_field(name="User", value=user.mention, inline=False)
+            embed.add_field(name="Removed", value=str(removed), inline=False)
+            embed.add_field(name="By", value=interaction.user.mention, inline=False)
+            embed.add_field(
+                name="Clear Reason",
+                value=reason if reason else "No reason provided",
+                inline=False
+            )
+
+            embed.set_footer(text="Powered by Kakashi")
+
+            log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
+            if log_channel:
+                await log_channel.send(embed=embed)
+
+            await interaction.response.send_message(
+                f"âœ… Cleared {removed} warn(s) for {user.mention}.",
+                ephemeral=True
+            )
+
+
+@bot.tree.command(name="manageban", description="Ban or unban a user")
+@app_commands.describe(
+    target="User to ban or unban",
+    action="Choose ban or unban",
+    reason="Reason for the action",
+    evidence="Upload evidence image"
+)
+@app_commands.choices(action=[
+    app_commands.Choice(name="Ban", value="ban"),
+    app_commands.Choice(name="Unban", value="unban")
+])
+async def manageban(
+    interaction: discord.Interaction,
+    target: discord.User,
+    action: app_commands.Choice[str],
+    reason: str,
+    evidence: discord.Attachment
+):
+
+    owner_role = interaction.guild.get_role(OWNER_ROLE_ID)
+
+    if owner_role not in interaction.user.roles:
+        await interaction.response.send_message(
+            "âŒ Only owners can use this command.",
+            ephemeral=True
+        )
+        return
+
+    if not evidence.content_type or not evidence.content_type.startswith("image"):
+        await interaction.response.send_message(
+            "âŒ Evidence must be an image.",
+            ephemeral=True
+        )
+        return
+
+    log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
+
+   # Set title and color based on action
+    if action.value == "ban":
+        title = "User Banned ðŸš«"
+        color = discord.Color.red()
+    else:
+        title = "User Unbanned âœ…"
+        color = discord.Color.green()
+
+    embed = discord.Embed(
+        title=title,
+        color=color
+    )
+
+    embed.add_field(
+        name="Actioned By",
+        value=interaction.user.mention,
+        inline=False
+    )
+
+    embed.add_field(
+        name="Target",
+        value=f"{target} ({target.id})",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Action",
+        value=action.value.upper(),
+        inline=True
+    )
+
+    embed.add_field(
+        name="Moderator",
+        value=interaction.user.mention,
+        inline=True
+    )
+
+    embed.add_field(
+        name="Reason",
+        value=reason,
+        inline=False
+    )
+
+    embed.set_image(url=evidence.url)
+    embed.set_footer(text="Powered by Kakashi")
+    embed.timestamp = datetime.utcnow()
+
+    try:
+        if action.value == "ban":
+            await interaction.guild.ban(target, reason=reason)
+
+        elif action.value == "unban":
+            await interaction.guild.unban(target)
+
+    except Exception as e:
+        await interaction.response.send_message(
+            f"âŒ Error: {e}",
+            ephemeral=True
+        )
+        return
+
+    if log_channel:
+        await log_channel.send(embed=embed)
+
+    await interaction.response.send_message(
+        f"âœ… Action **{action.value}** completed for {target}.",
+        ephemeral=True
+    )
+
+ 
+            
+# ---------------- RUN BOT ----------------
+
+bot.run("BOT_TOKEN")
