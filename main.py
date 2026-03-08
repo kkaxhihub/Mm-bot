@@ -495,10 +495,12 @@ async def warn(
     async with aiosqlite.connect("warns.db") as db:
 
         # WARN USER
-        if action.value == "warn":
-    cursor = await db.execute("SELECT COUNT(*) FROM warns")
-    count = await cursor.fetchone()
-    case_id = count[0] + 1
+    if action.value == "warn":
+
+    cursor =    await db.execute("SELECT COUNT(*) FROM warns")
+    count =    await cursor.fetchone()
+    case_id =    count[0] + 1
+
     await db.execute(
         "INSERT INTO warns VALUES (?, ?, ?, ?)",
         (user.id, interaction.user.id, reason, case_id)
