@@ -110,7 +110,7 @@ class TicketControls(discord.ui.View):
         await interaction.response.edit_message(view=self)
 
         embed = discord.Embed(
-            description=f"✅ {interaction.user.mention} will be your middleman for today.",
+            description=f"{interaction.user.mention} will be your middleman for today.",
             color=discord.Color.green()
         )
 
