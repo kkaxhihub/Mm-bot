@@ -526,7 +526,7 @@ async def warn(
             await db.commit()
 
             embed = discord.Embed(
-                title="âš ï¸ User Warned",
+                title="⚠️User Warned",
                 color=discord.Color.orange()
             )
 
@@ -542,7 +542,7 @@ async def warn(
                 await log_channel.send(embed=embed)
 
             await interaction.response.send_message(
-                f"âœ… {user.mention} has been warned.",
+                f"✅{user.mention} has been warned.",
                 ephemeral=True
             )
 
@@ -562,7 +562,7 @@ async def warn(
             text = ""
 
             for case_id, reason in rows:
-                text += f"Case #{case_id} â€¢ {reason}\n"
+                text += f"Case #{case_id}  {reason}\n"
 
             embed = discord.Embed(
                 title=f"{len(rows)} warn(s) for {user}",
@@ -594,7 +594,7 @@ async def warn(
             await db.commit()
 
             embed = discord.Embed(
-                title="ðŸ—‘ Warn Removed",
+                title="🗑️ Warn Removed",
                 color=discord.Color.red()
             )
 
@@ -615,7 +615,7 @@ async def warn(
                 await log_channel.send(embed=embed)
 
             await interaction.response.send_message(
-                f"âœ… Warn case #{case} removed.",
+                f" Warn case #{case} removed.",
                 ephemeral=True
             )
       
@@ -636,7 +636,7 @@ async def warn(
             await db.commit()
 
             embed = discord.Embed(
-                title="ðŸ§¹ Warns Cleared",
+                title="🧹 Warns Cleared",
                 color=discord.Color.green(),
                 timestamp=datetime.utcnow()
             )
@@ -657,7 +657,7 @@ async def warn(
                 await log_channel.send(embed=embed)
 
             await interaction.response.send_message(
-                f"âœ… Cleared {removed} warn(s) for {user.mention}.",
+                f"Cleared {removed} warn(s) for {user.mention}.",
                 ephemeral=True
             )
 
