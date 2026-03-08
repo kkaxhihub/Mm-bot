@@ -496,13 +496,9 @@ async def warn(
 
         # WARN USER
         if action.value == "warn":
-    cursor = await db.execute(
-        "Select MAX(case_id) FROM warns"
-    )
-    data = await cursor.fetchone()
-
-    case_id = (data[0] or 0) + 1
-
+    cursor = await db.execute("SELECT COUNT(*) FROM warns")
+    count = await cursor.fetchone()
+    case_id = count[0] + 1
     await db.execute(
         "INSERT INTO warns VALUES (?, ?, ?, ?)",
         (user.id, interaction.user.id, reason, case_id)
