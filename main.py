@@ -567,15 +567,15 @@ elif action.value == "delwarn":
                 )
                 return
 
-            user_id, mod_id, original_reason = data
+    user_id, mod_id, original_reason = data
 
-            await db.execute("DELETE FROM warns WHERE case_id=?", (case,))
-            await db.commit()
+    await db.execute("DELETE FROM warns WHERE case_id=?", (case,))
+    await db.commit()
 
-            embed = discord.Embed(
-                title="🗑 Warn Removed",
-                color=discord.Color.red()
-            )
+    embed = discord.Embed(
+        title="🗑 Warn Removed",
+        color=discord.Color.red()
+    )
 
             embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
             embed.add_field(name="Case", value=f"#{case}", inline=False)
