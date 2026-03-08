@@ -505,7 +505,7 @@ async def warn(
         "INSERT INTO warns VALUES (?, ?, ?, ?)",
         (user.id, interaction.user.id, reason, case_id)
     )
-    await db.commit()
+    await db.commit()    
 
             embed = discord.Embed(
                 title="⚠️ User Warned",
