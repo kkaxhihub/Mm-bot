@@ -316,7 +316,7 @@ async def add(interaction: discord.Interaction, user: discord.Member):
 
     # Confirmation embed
     embed = discord.Embed(
-        description=f"✅ {user.mention} has been added to the ticket!",
+        description=f"{user.mention} has been added to the ticket!",
         color=discord.Color.green()
     )
     embed.set_footer(text="Powered by Kakashi")
@@ -355,7 +355,7 @@ async def transfer(interaction: discord.Interaction, user: discord.Member):
     # Embed to confirm transfer
     embed = discord.Embed(
         title="🔄 Middleman Transferred",
-        description=f"✅ {interaction.user.mention} has transferred this ticket to {user.mention}.",
+        description=f"{interaction.user.mention} has transferred this ticket to {user.mention}.",
         color=discord.Color.green()
     )
     embed.set_footer(text="Powered by Kakashi")
