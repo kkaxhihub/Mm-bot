@@ -527,12 +527,12 @@ await interaction.response.send_message(
     ephemeral=True
 )
 
-        # SHOW WARNINGS
-    if action.value == "warnings":
-            cursor = await db.execute(
-                "SELECT case_id, reason FROM warns WHERE user_id=?",
-                (user.id,)
-            )
+# SHOW WARNINGS
+if action.value == "warnings":
+    cursor = await db.execute(
+        "SELECT case_id, reason FROM warns WHERE user_id=?",
+        (user.id,)
+    )
             rows = await cursor.fetchall()
 
             if not rows:
