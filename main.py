@@ -507,7 +507,7 @@ async def warn(
     )
     await db.commit()    
 
-            embed = discord.Embed(title="⚠️ User Warned",
+    embed = discord.Embed(title="⚠️ User Warned",
                 color=discord.Color.orange()
             )
 
