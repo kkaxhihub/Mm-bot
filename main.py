@@ -544,11 +544,11 @@ if action.value == "warnings":
     for case_id, reason in rows:
                 text += f"Case #{case_id} • {reason}\n"
 
-            embed = discord.Embed(
-            title=f"{len(rows)} warn(s) for {user}",
-            description=text,
-            color=discord.Color.blue()
-        )
+    embed = discord.Embed(
+    title=f"{len(rows)} warn(s) for {user}",
+    description=text,
+    color=discord.Color.blue()
+)
 
             await interaction.response.send_message(embed=embed)
 
