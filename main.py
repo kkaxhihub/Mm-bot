@@ -224,26 +224,26 @@ async def on_ready():
     print(f"{bot.user} is online!")
 
 # ---------------- PANEL COMMAND ----------------
-
 @bot.tree.command(name="panel", description="Send middleman panel")
 async def panel(interaction: discord.Interaction):
 
+    # Check if the user has the owner role
     owner_role = interaction.guild.get_role(OWNER_ROLE_ID)
-
     if owner_role not in interaction.user.roles:
         await interaction.response.send_message(
-            "âŒ Only the owner role can use this command.",
+            "❌ Only the owner role can use this command.",
             ephemeral=True
         )
         return
 
+    # Embed for the panel message
     text = (
         "**Hatake Market**\n\n"
         "Click the button below to **Request a Middleman**.\n\n"
         "**How it works**\n"
-        "â€¢ Seller gives item to MM\n"
-        "â€¢ Buyer sends payment to MM\n"
-        "â€¢ MM gives item to buyer\n\n"
+        "• Seller gives item to MM\n"
+        "• Buyer sends payment to MM\n"
+        "• MM gives item to buyer\n\n"
         "**Disclaimer**\n"
         "Both traders must agree to the deal."
     )
@@ -252,35 +252,41 @@ async def panel(interaction: discord.Interaction):
         description=text,
         color=discord.Color.green()
     )
-
     embed.set_footer(text="Powered by Kakashi")
 
+    # Send the panel message with the TicketPanel buttons
     await interaction.channel.send(embed=embed, view=TicketPanel())
 
-    await interaction.response.send_message("âœ… Panel sent!", ephemeral=True)
+    # Confirm to the command user
+    await interaction.response.send_message(
+        "✅ Panel sent!",
+        ephemeral=True
+    )
 
 
 # ---------------- MIDDLEMAN INFO ----------------
-
 @bot.tree.command(name="middleman", description="Show middleman info")
 async def middleman(interaction: discord.Interaction):
 
     role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
 
+    # Check if user has the middleman role
     if role not in interaction.user.roles:
         await interaction.response.send_message(
-            "âŒ Only middlemen can use this command.", ephemeral=True
+            "❌ Only middlemen can use this command.",
+            ephemeral=True
         )
         return
 
+    # Embed explaining middleman services
     embed = discord.Embed(
         title="Middleman Services",
         description=(
-            "â€¢ A middleman is a trusted go-between who holds payment until the seller delivers goods or services.\n"
-            "â€¢ The funds are released once the buyer confirms everything is as agreed.\n"
-            "â€¢ This process helps prevent scams, build trust, and resolve disputes.\n"
-            "â€¢ Common in valuable games, real-life money trades, in-game currency, and collectibles.\n"
-            "â€¢ Only works safely if the middleman is reputable and verified."
+            "• A middleman is a trusted go-between who holds payment until the seller delivers goods or services.\n"
+            "• The funds are released once the buyer confirms everything is as agreed.\n"
+            "• This process helps prevent scams, build trust, and resolve disputes.\n"
+            "• Common in valuable games, real-life money trades, in-game currency, and collectibles.\n"
+            "• Only works safely if the middleman is reputable and verified."
         ),
         color=discord.Color.green()
     )
