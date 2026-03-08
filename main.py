@@ -577,26 +577,26 @@ elif action.value == "delwarn":
         color=discord.Color.red()
     )
 
-            embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
-            embed.add_field(name="Case", value=f"#{case}", inline=False)
-            embed.add_field(name="By", value=interaction.user.mention, inline=False)
-            embed.add_field(name="Original Reason", value=original_reason, inline=False)
-            embed.add_field(
-                name="Removal Reason",
-                value=reason if reason else "No reason provided",
-                inline=False
-            )
+    embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
+    embed.add_field(name="Case", value=f"#{case}", inline=False)
+    embed.add_field(name="By", value=interaction.user.mention, inline=False)
+    embed.add_field(name="Original Reason", value=original_reason, inline=False)
+    embed.add_field(
+        name="Removal Reason",
+        value=reason if reason else "No reason provided",
+        inline=False
+    )
 
-            embed.set_footer(text="Powered by Kakashi")
+    embed.set_footer(text="Powered by Kakashi")
 
-            log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
-            if log_channel:
-                await log_channel.send(embed=embed)
+    log_channel = interaction.guild.get_channel(LOG_CHANNEL_ID)
+    if log_channel:
+        await log_channel.send(embed=embed)
 
-            await interaction.response.send_message(
-                f"✅ Warn case #{case} removed.",
-                ephemeral=True
-            )
+    await interaction.response.send_message(
+        f"✅ Warn case #{case} removed.",
+        ephemeral=True
+    )
       
             # CLEAR WARNS
         elif action.value == "clearwarn":
