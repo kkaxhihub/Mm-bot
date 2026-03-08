@@ -529,7 +529,6 @@ await interaction.response.send_message(
 
         # SHOW WARNINGS
         elif action.value == "warnings":
-
             cursor = await db.execute(
                 "SELECT case_id, reason FROM warns WHERE user_id=?",
                 (user.id,)
