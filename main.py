@@ -431,7 +431,7 @@ async def vouch(interaction: discord.Interaction, user: discord.Member, reason: 
 
     # Main embed (goes in the log channel)
     embed = discord.Embed(
-        title="âœ… Vouch Given",
+        title="✅ Vouch Given",
         color=discord.Color.green()
     )
 
