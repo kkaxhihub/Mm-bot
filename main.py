@@ -154,10 +154,12 @@ class TicketPanel(discord.ui.View):
         guild = interaction.guild
         role = guild.get_role(MIDDLEMAN_ROLE_ID)
 
+        # Create or get Tickets category
         category = discord.utils.get(guild.categories, name="Tickets")
         if category is None:
             category = await guild.create_category("Tickets")
 
+        # Set channel permissions
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=False),
             interaction.user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
@@ -165,6 +167,7 @@ class TicketPanel(discord.ui.View):
             guild.me: discord.PermissionOverwrite(view_channel=True)
         }
 
+        # Create the ticket channel
         channel = await guild.create_text_channel(
             f"ticket-{interaction.user.name}",
             category=category,
@@ -173,23 +176,31 @@ class TicketPanel(discord.ui.View):
 
         await channel.edit(topic=f"creator:{interaction.user.id}")
 
+        # Ticket instructions embed
         embed = discord.Embed(
             description=(
                 f"{interaction.user.mention}, Thank you for using our middleman services.\n"
                 "Please wait for a middleman to assist you.\n\n"
-                "If you have any questions, please let <@1478027602269700168> or higher know."
+                "**Hatake Market**\n\n"
+                "**How it works**\n"
+                "• Seller gives item to MM\n"
+                "• Buyer sends payment to MM\n"
+                "• MM gives item to buyer\n\n"
+                "**Disclaimer**\n"
+                "Both traders must agree to the deal."
             ),
             color=discord.Color.green()
         )
-
         embed.set_footer(text="Powered by Kakashi")
 
+        # Send embed + buttons in ticket channel
         await channel.send(
             content=f"{role.mention}",
             embed=embed,
             view=TicketControls()
         )
 
+        # Confirm ticket creation to the user
         await interaction.response.send_message(
             f"✅ Ticket created: {channel.mention}",
             ephemeral=True
