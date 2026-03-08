@@ -85,7 +85,7 @@ class TicketControls(discord.ui.View):
 
         if role not in interaction.user.roles:
             await interaction.response.send_message(
-                "âŒ Only middlemen can claim this ticket.", ephemeral=True
+                "❌ Only middlemen can claim this ticket.", ephemeral=True
             )
             return
 
@@ -110,7 +110,7 @@ class TicketControls(discord.ui.View):
         await interaction.response.edit_message(view=self)
 
         embed = discord.Embed(
-            description=f"âœ… {interaction.user.mention} will be your middleman for today.",
+            description=f"✅ {interaction.user.mention} will be your middleman for today.",
             color=discord.Color.green()
         )
 
@@ -127,7 +127,7 @@ class TicketControls(discord.ui.View):
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         embed = discord.Embed(
-            description="ðŸ”’ Closing ticket in 5 seconds...",
+            description="⏳ Closing ticket in 5 seconds...",
             color=discord.Color.green()
         )
 
@@ -155,7 +155,6 @@ class TicketPanel(discord.ui.View):
         role = guild.get_role(MIDDLEMAN_ROLE_ID)
 
         category = discord.utils.get(guild.categories, name="Tickets")
-
         if category is None:
             category = await guild.create_category("Tickets")
 
@@ -192,7 +191,7 @@ class TicketPanel(discord.ui.View):
         )
 
         await interaction.response.send_message(
-            f"âœ… Ticket created: {channel.mention}",
+            f"✅ Ticket created: {channel.mention}",
             ephemeral=True
         )
 
