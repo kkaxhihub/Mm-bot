@@ -369,7 +369,7 @@ async def transfer(interaction: discord.Interaction, user: discord.Member):
 async def close(interaction: discord.Interaction):
 
     embed = discord.Embed(
-        description="ðŸ”’ Closing ticket in 5 seconds...",
+        description="⏳Closing ticket in 5 seconds...",
         color=discord.Color.green()
     )
 
