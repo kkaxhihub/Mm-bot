@@ -298,25 +298,27 @@ async def middleman(interaction: discord.Interaction):
 
 
 # ---------------- ADD USER ----------------
-
 @bot.tree.command(name="add", description="Add user to ticket")
 async def add(interaction: discord.Interaction, user: discord.Member):
 
     role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
 
+    # Only middlemen can use this command
     if role not in interaction.user.roles:
         await interaction.response.send_message(
-            "âŒ Only middlemen can use this command.", ephemeral=True
+            "❌ Only middlemen can use this command.",
+            ephemeral=True
         )
         return
 
+    # Give the specified user access to the ticket channel
     await interaction.channel.set_permissions(user, view_channel=True, send_messages=True)
 
+    # Confirmation embed
     embed = discord.Embed(
-        description=f"âœ… {user.mention} has been added to the ticket!",
+        description=f"✅ {user.mention} has been added to the ticket!",
         color=discord.Color.green()
     )
-
     embed.set_footer(text="Powered by Kakashi")
 
     await interaction.response.send_message(embed=embed)
@@ -348,8 +350,8 @@ async def transfer(interaction: discord.Interaction, user: discord.Member):
     )
 
     embed = discord.Embed(
-        title="ðŸ” Middleman Transferred",
-        description=f"{interaction.user.mention} transferred this ticket to {user.mention}",
+        title="🔄” Middleman Transferred",
+        description=f ✅"{interaction.user.mention} transferred this ticket to {user.mention}",
         color=discord.Color.green()
     )
 
