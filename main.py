@@ -426,7 +426,7 @@ async def vouch(interaction: discord.Interaction, user: discord.Member, reason: 
     # Fetch the log channel
     log_channel = interaction.guild.get_channel(VOUCH_LOG_CHANNEL_ID)
     if log_channel is None:
-        await interaction.response.send_message("âŒ Vouch log channel not found.", ephemeral=True)
+        await interaction.response.send_message("🚫 Vouch log channel not found.", ephemeral=True)
         return
 
     # Main embed (goes in the log channel)
@@ -456,7 +456,7 @@ async def vouch(interaction: discord.Interaction, user: discord.Member, reason: 
 
             # Detailed embed
             details_embed = discord.Embed(
-                title="â„¹ï¸ Vouch Details",
+                title="✅Vouch Given",
                 color=discord.Color.blue()
             )
 
@@ -484,7 +484,7 @@ async def vouch(interaction: discord.Interaction, user: discord.Member, reason: 
 
     # Confirm to the user that the vouch was recorded
     await interaction.response.send_message(
-        f"âœ… Your vouch for {user.mention} has been recorded in <#{VOUCH_LOG_CHANNEL_ID}>.",
+        f"✅Your vouch for {user.mention} has been recorded in <#{VOUCH_LOG_CHANNEL_ID}>.",
         ephemeral=True
     )
 
