@@ -573,19 +573,19 @@ elif action.value == "delwarn":
     await db.commit()
 
     embed = discord.Embed(
-        title="🗑 Warn Removed",
-        color=discord.Color.red()
-    )
+            title="🗑 Warn Removed",
+            color=discord.Color.red()
+        )
 
-    embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
-    embed.add_field(name="Case", value=f"#{case}", inline=False)
-    embed.add_field(name="By", value=interaction.user.mention, inline=False)
-    embed.add_field(name="Original Reason", value=original_reason, inline=False)
-    embed.add_field(
-        name="Removal Reason",
-        value=reason if reason else "No reason provided",
-        inline=False
-    )
+        embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
+        embed.add_field(name="Case", value=f"#{case}", inline=False)
+        embed.add_field(name="By", value=interaction.user.mention, inline=False)
+        embed.add_field(name="Original Reason", value=original_reason, inline=False)
+        embed.add_field(
+            name="Removal Reason",
+            value=reason if reason else "No reason provided",
+            inline=False
+        )
 
     embed.set_footer(text="Powered by Kakashi")
 
