@@ -550,7 +550,7 @@ if action.value == "warnings":
     color=discord.Color.blue()
 )
 
-            await interaction.response.send_message(embed=embed)
+    await interaction.response.send_message(embed=embed)
 
         # DELETE WARN
         elif action.value == "delwarn":
