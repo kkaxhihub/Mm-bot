@@ -143,7 +143,6 @@ class TicketControls(discord.ui.View):
 
 
 # ---------------- PANEL BUTTON ----------------
-
 class TicketPanel(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -176,19 +175,15 @@ class TicketPanel(discord.ui.View):
 
         await channel.edit(topic=f"creator:{interaction.user.id}")
 
-        # Ticket instructions embed
+        # Ticket welcome message
+        welcome_message = (
+            f"{interaction.user.mention}, Thank you for using our middleman services.\n"
+            "Please wait for a middleman to assist you.\n\n"
+            "If you have any questions, please let <@1478027602269700168> or higher know."
+        )
+
         embed = discord.Embed(
-            description=(
-                f"{interaction.user.mention}, Thank you for using our middleman services.\n"
-                "Please wait for a middleman to assist you.\n\n"
-                "**Hatake Market**\n\n"
-                "**How it works**\n"
-                "• Seller gives item to MM\n"
-                "• Buyer sends payment to MM\n"
-                "• MM gives item to buyer\n\n"
-                "**Disclaimer**\n"
-                "Both traders must agree to the deal."
-            ),
+            description=welcome_message,
             color=discord.Color.green()
         )
         embed.set_footer(text="Powered by Kakashi")
