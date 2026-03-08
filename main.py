@@ -539,7 +539,7 @@ if action.value == "warnings":
     if not rows:
         await interaction.response.send_message("No warnings found.")
         return
-            text = ""
+    text = ""
 
             for case_id, reason in rows:
                 text += f"Case #{case_id} • {reason}\n"
