@@ -553,10 +553,9 @@ if action.value == "warnings":
     await interaction.response.send_message(embed=embed)
 
         # DELETE WARN
-        elif action.value == "delwarn":
-
-            cursor = await db.execute(
-                "SELECT user_id, mod_id, reason FROM warns WHERE case_id=?",
+elif action.value == "delwarn":
+    cursor = await db.execute(
+            "SELECT user_id, mod_id, reason FROM warns WHERE case_id=?",
                 (case,)
             )
             data = await cursor.fetchone()
