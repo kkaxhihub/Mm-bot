@@ -497,7 +497,7 @@ async def warn(
         # WARN USER
     if action.value == "warn":
 
-    cursor =    await db.execute("SELECT COUNT(*) FROM warns")
+cursor =    await db.execute("SELECT COUNT(*) FROM warns")
     count =    await cursor.fetchone()
     case_id =    count[0] + 1
 
