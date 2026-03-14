@@ -396,8 +396,16 @@ async def transfer(interaction: discord.Interaction, user: discord.Member):
 @bot.tree.command(name="close", description="Close ticket")
 async def close(interaction: discord.Interaction):
 
+    # Only allow in ticket channels
+    if not interaction.channel.name.startswith("ticket-"):
+        await interaction.response.send_message(
+            "❌ This command can only be used inside ticket channels.",
+            ephemeral=True
+        )
+        return
+
     embed = discord.Embed(
-        description="⏳Closing ticket in 5 seconds...",
+        description="⏳ Closing ticket in 5 seconds...",
         color=discord.Color.green()
     )
 
