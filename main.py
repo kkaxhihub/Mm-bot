@@ -340,9 +340,25 @@ async def add(interaction: discord.Interaction, user: discord.Member):
 @bot.tree.command(name="transfer", description="Transfer ticket")
 async def transfer(interaction: discord.Interaction, user: discord.Member):
 
+    # Only allow in ticket channels
+    if not interaction.channel.name.startswith("ticket-"):
+        await interaction.response.send_message(
+            "❌ This command can only be used inside ticket channels.",
+            ephemeral=True
+        )
+        return
+
+    # Prevent transferring to yourself
+    if user.id == interaction.user.id:
+        await interaction.response.send_message(
+            "❌ You cannot transfer the ticket to yourself.",
+            ephemeral=True
+        )
+        return
+
     role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
 
-    # Only middlemen can use this command
+    # Only middlemen can transfer
     if role not in interaction.user.roles:
         await interaction.response.send_message(
             "❌ Only middlemen can use this command.",
@@ -350,26 +366,26 @@ async def transfer(interaction: discord.Interaction, user: discord.Member):
         )
         return
 
-    # Remove sending permissions from the current middleman
+    # Remove send perms from current middleman
     await interaction.channel.set_permissions(
         interaction.user,
         view_channel=True,
         send_messages=False
     )
 
-    # Give sending permissions to the new middleman
+    # Give send perms to new middleman
     await interaction.channel.set_permissions(
         user,
         view_channel=True,
         send_messages=True
     )
 
-    # Embed to confirm transfer
     embed = discord.Embed(
         title="🔄 Middleman Transferred",
         description=f"{interaction.user.mention} has transferred this ticket to {user.mention}.",
         color=discord.Color.green()
     )
+
     embed.set_footer(text="Powered by Kakashi")
 
     await interaction.response.send_message(embed=embed)
