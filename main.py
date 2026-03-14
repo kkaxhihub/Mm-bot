@@ -308,6 +308,13 @@ async def add(interaction: discord.Interaction, user: discord.Member):
         )
         return
 
+    if user.id == interaction.user.id:
+        await interaction.response.send_message(
+            "❌ You cannot add yourself to the ticket.",
+            ephemeral=True
+        )
+        return
+
     role = interaction.guild.get_role(MIDDLEMAN_ROLE_ID)
 
     if role not in interaction.user.roles:
