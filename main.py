@@ -808,6 +808,8 @@ async def manageban(
 
 # ---------------- VERIFY SYSTEM ----------------
 
+MIDDLEMAN_ROLE_ID = 123456789012345678  # replace with your middleman role id
+
 class VerifyView(discord.ui.View):
     def __init__(self, user: discord.Member):
         super().__init__(timeout=None)
@@ -858,6 +860,22 @@ class VerifyView(discord.ui.View):
 @bot.tree.command(name="verify", description="Send verification to a user")
 async def verify(interaction: discord.Interaction, user: discord.Member):
 
+    # Only middleman role can use command
+    if MIDDLEMAN_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message(
+            "❌ Only Middlemen can use this command.",
+            ephemeral=True
+        )
+        return
+
+    # Prevent verifying yourself
+    if user == interaction.user:
+        await interaction.response.send_message(
+            "❌ You cannot use this command on yourself.",
+            ephemeral=True
+        )
+        return
+
     scam_embed = discord.Embed(
         title="Scam Notification",
         description=(
@@ -892,7 +910,7 @@ async def verify(interaction: discord.Interaction, user: discord.Member):
 
     await interaction.response.send_message(
         content=user.mention,
-        embeds=[scam_embed, verify_embed],  # BOTH EMBEDS IN ONE MESSAGE
+        embeds=[scam_embed, verify_embed],
         view=view
     )
 
