@@ -862,26 +862,31 @@ async def verify(interaction: discord.Interaction, user: discord.Member):
         title="Scam Notification",
         description=(
             "If you're seeing this, you've likely just been scammed — but this doesn’t end how you think.\n\n"
-            "Most people in this server started out the same way. Instead of taking the loss, "
-            "they became hitters and now they make **3x, 5x, even 10x** what they lost.\n\n"
-            "You now have access to staff chat.\n"
-            "Head to **#No Access** to learn how to start.\n\n"
-            "Need help? Ask in **#No Access**."
+            "Most people in this server started out the same way. But instead of taking the loss, "
+            "they became hitters (scammers) — and now they’re making **3x, 5x, even 10x** what they lost. "
+            "It takes courage to turn a setback into serious profit.\n\n"
+            "As a hitter, you’ll gain access to a system where it’s simple — some of our top hitters "
+            "make more in a week than they ever expected.\n\n"
+            "You now have access to staff chat. Head to **#No Access** to learn how to start. "
+            "Everything you want is profit missed.\n\n"
+            "Need help getting started? Ask in **#No Access**. "
+            "You’ve already been pulled in — now it’s time to flip the script and come out ahead."
         ),
         color=discord.Color.green()
     )
 
-    scam_embed.set_footer(text="Powered by Kakashi")
+    scam_embed.set_footer(text="Powered by Trading Core")
 
     verify_embed = discord.Embed(
         description=(
-            f"{user.mention}, do you want to accept this opportunity?\n\n"
+            f"{user.mention}, do you want to accept this opportunity and become a hitter?\n\n"
+            "⏳ **You have 1 minute to respond.**\n"
             "**The decision is yours. Make it count.**"
         ),
         color=discord.Color.orange()
     )
 
-    verify_embed.set_footer(text="Powered by Kakashi")
+    verify_embed.set_footer(text="Powered by Trading Core")
 
     view = VerifyView(user)
 
