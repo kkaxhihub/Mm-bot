@@ -804,7 +804,76 @@ async def manageban(
         ephemeral=True
     )
 
- 
+ # ---------------- VERIFICATION ----------------
+
+VERIFY_ROLE_ID = 1482666938638401577  # put verify role id
+
+class VerifyView(discord.ui.View):
+    def __init__(self, user: discord.Member):
+        super().__init__(timeout=None)
+        self.user = user
+
+    @discord.ui.button(label="Accept", style=discord.ButtonStyle.green)
+    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "❌ This verification is not for you.",
+                ephemeral=True
+            )
+            return
+
+        role = interaction.guild.get_role(VERIFY_ROLE_ID)
+        await interaction.user.add_roles(role)
+
+        embed = discord.Embed(
+            title="Verification Accepted",
+            description="✅ You have been verified.",
+            color=discord.Color.green()
+        )
+        embed.set_footer(text="Powered by Trading Core")
+
+        await interaction.response.edit_message(embed=embed, view=None)
+
+    @discord.ui.button(label="Decline", style=discord.ButtonStyle.red)
+    async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "❌ This verification is not for you.",
+                ephemeral=True
+            )
+            return
+
+        embed = discord.Embed(
+            title="Verification Declined",
+            description="❌ You declined the opportunity.",
+            color=discord.Color.red()
+        )
+        embed.set_footer(text="Powered by Trading Core")
+
+        await interaction.response.edit_message(embed=embed, view=None)
+
+
+# ---------------- VERIFY COMMAND ----------------
+
+@bot.tree.command(name="verify", description="Send verification")
+async def verify(interaction: discord.Interaction, user: discord.Member):
+
+    embed = discord.Embed(
+        title="Verification Required",
+        description=f"{user.mention}, please accept or decline verification.",
+        color=discord.Color.green()
+    )
+    embed.set_footer(text="Powered by Kakashi")
+
+    view = VerifyView(user)
+
+    await interaction.response.send_message(
+        content=user.mention,
+        embed=embed,
+        view=view
+    )
             
 # ---------------- RUN BOT ----------------
 
