@@ -892,11 +892,7 @@ async def verify(interaction: discord.Interaction, user: discord.Member):
 
     await interaction.response.send_message(
         content=user.mention,
-        embed=scam_embed
-    )
-
-    await interaction.followup.send(
-        embed=verify_embed,
+        embeds=[scam_embed, verify_embed],  # BOTH EMBEDS IN ONE MESSAGE
         view=view
     )
 
