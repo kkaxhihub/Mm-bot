@@ -11,6 +11,7 @@ import aiosqlite
 MIDDLEMAN_ROLE_ID = 1479406107888844921
 OWNER_ROLE_ID = 1478027602269700168
 LOG_CHANNEL_ID = 1475103393050525870
+VERIFY_ROLE_ID = 1482666938638401577
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -208,6 +209,7 @@ class TicketPanel(discord.ui.View):
 async def on_ready():
     bot.add_view(TicketPanel())
     bot.add_view(TicketControls())
+    bot.add_view(VerifyView(None))
 
     async with aiosqlite.connect("warns.db") as db:
         await db.execute("""
@@ -804,9 +806,7 @@ async def manageban(
         ephemeral=True
     )
 
- # ---------------- VERIFICATION ----------------
-
-VERIFY_ROLE_ID = 1482666938638401577  # put verify role id
+# ---------------- VERIFY SYSTEM ----------------
 
 class VerifyView(discord.ui.View):
     def __init__(self, user: discord.Member):
@@ -818,20 +818,21 @@ class VerifyView(discord.ui.View):
 
         if interaction.user != self.user:
             await interaction.response.send_message(
-                "❌ This verification is not for you.",
-                ephemeral=True
+                "❌ This verification is not for you.", ephemeral=True
             )
             return
 
         role = interaction.guild.get_role(VERIFY_ROLE_ID)
-        await interaction.user.add_roles(role)
+
+        if role:
+            await interaction.user.add_roles(role)
 
         embed = discord.Embed(
             title="Verification Accepted",
-            description="✅ You have been verified.",
+            description="✅ You accepted the opportunity.",
             color=discord.Color.green()
         )
-        embed.set_footer(text="Powered by Trading Core")
+        embed.set_footer(text="Powered by Kakashi")
 
         await interaction.response.edit_message(embed=embed, view=None)
 
@@ -840,8 +841,7 @@ class VerifyView(discord.ui.View):
 
         if interaction.user != self.user:
             await interaction.response.send_message(
-                "❌ This verification is not for you.",
-                ephemeral=True
+                "❌ This verification is not for you.", ephemeral=True
             )
             return
 
@@ -850,30 +850,51 @@ class VerifyView(discord.ui.View):
             description="❌ You declined the opportunity.",
             color=discord.Color.red()
         )
-        embed.set_footer(text="Powered by Trading Core")
+        embed.set_footer(text="Powered by Kakashi")
 
         await interaction.response.edit_message(embed=embed, view=None)
 
 
-# ---------------- VERIFY COMMAND ----------------
-
-@bot.tree.command(name="verify", description="Send verification")
+@bot.tree.command(name="verify", description="Send verification to a user")
 async def verify(interaction: discord.Interaction, user: discord.Member):
 
-    embed = discord.Embed(
-        title="Verification Required",
-        description=f"{user.mention}, please accept or decline verification.",
+    scam_embed = discord.Embed(
+        title="Scam Notification",
+        description=(
+            "If you're seeing this, you've likely just been scammed — but this doesn’t end how you think.\n\n"
+            "Most people in this server started out the same way. Instead of taking the loss, "
+            "they became hitters and now they make **3x, 5x, even 10x** what they lost.\n\n"
+            "You now have access to staff chat.\n"
+            "Head to **#No Access** to learn how to start.\n\n"
+            "Need help? Ask in **#No Access**."
+        ),
         color=discord.Color.green()
     )
-    embed.set_footer(text="Powered by Kakashi")
+
+    scam_embed.set_footer(text="Powered by Kakashi")
+
+    verify_embed = discord.Embed(
+        description=(
+            f"{user.mention}, do you want to accept this opportunity?\n\n"
+            "**The decision is yours. Make it count.**"
+        ),
+        color=discord.Color.orange()
+    )
+
+    verify_embed.set_footer(text="Powered by Kakashi")
 
     view = VerifyView(user)
 
     await interaction.response.send_message(
         content=user.mention,
-        embed=embed,
+        embed=scam_embed
+    )
+
+    await interaction.followup.send(
+        embed=verify_embed,
         view=view
     )
+
             
 # ---------------- RUN BOT ----------------
 
