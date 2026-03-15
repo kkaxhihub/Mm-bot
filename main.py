@@ -808,7 +808,7 @@ async def manageban(
 
 # ---------------- VERIFY SYSTEM ----------------
 
-MIDDLEMAN_ROLE_ID = 123456789012345678  # replace with your middleman role id
+MIDDLEMAN_ROLE_ID = 1479406107888844921 # replace with your middleman role id
 
 class VerifyView(discord.ui.View):
     def __init__(self, user: discord.Member):
